@@ -17,13 +17,16 @@ jobs:
       - name: 📂 Sincronizando archivos via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_HOST }} # Change if using another host
-          username: ${{ secrets.FTP_USUARIO }}
-          password: ${{ secrets.FTP_PASS }}
-          server-dir: ${{ secrets.FTP_CARPETA }} # Replace with your correct path
+          server: ${{ secrets.FTP_HOSTING }} # Change if using another host
+          username: ${{ secrets.FTP_USUARNAME }}
+          password: ${{ secrets.FTP_PASSW }}
+          server-dir: ${{ secrets.FTP_WWW }} # Replace with your correct path
           protocol: ftps
           timeout: 86400000
           log-level: standard
           exclude: |
            .git/**
            .github/**
+
+
+
