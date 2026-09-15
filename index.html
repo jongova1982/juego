@@ -3,731 +3,1490 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Triqui - Jugador vs Máquina</title>
-
+    <meta name="theme-color" content="#031007">
+    <title>TRIQUI // MATRIX</title>
     <style>
+        :root {
+            --black: #020704;
+            --deep: #06150b;
+            --panel: rgba(3, 18, 10, 0.88);
+            --panel-soft: rgba(8, 33, 18, 0.72);
+            --line: rgba(108, 255, 143, 0.28);
+            --line-bright: rgba(134, 255, 169, 0.74);
+            --matrix: #54f57a;
+            --matrix-bright: #c7ffd3;
+            --cyan: #79fff1;
+            --gold: #ffd45d;
+            --muted: #9eb7a4;
+            --danger: #ff7e89;
+        }
 
         * {
             box-sizing: border-box;
         }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-
-            background: #000 url("./fondo_x_0.png") center / cover no-repeat fixed;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            min-height: 100vh;
+        html {
+            min-height: 100%;
+            background: var(--black);
         }
 
-        .juego {
-            background: white;
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            color: #f0fff2;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #020704 url("./fondo_x_0.png") center / cover fixed no-repeat;
+        }
 
-            padding: 30px;
+        body::before,
+        body::after {
+            position: fixed;
+            inset: 0;
+            content: "";
+            pointer-events: none;
+        }
 
-            border-radius: 15px;
+        body::before {
+            z-index: 0;
+            background:
+                radial-gradient(circle at 50% 20%, rgba(41, 255, 95, 0.14), transparent 34rem),
+                linear-gradient(115deg, rgba(0, 0, 0, 0.78), rgba(0, 12, 4, 0.66) 48%, rgba(0, 0, 0, 0.82));
+        }
 
-            box-shadow:
-                0 5px 20px rgba(0,0,0,0.15);
+        body::after {
+            z-index: 0;
+            opacity: 0.2;
+            background: repeating-linear-gradient(0deg, transparent 0, transparent 3px, rgba(142, 255, 166, 0.11) 4px);
+        }
 
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+        }
+
+        .app-shell {
+            position: relative;
+            z-index: 1;
+            width: min(1320px, 100%);
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: clamp(16px, 3vw, 42px);
+        }
+
+        .command-bar,
+        .panel,
+        .session-summary {
+            border: 1px solid var(--line);
+            background: linear-gradient(135deg, rgba(7, 27, 14, 0.92), rgba(2, 11, 6, 0.82));
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(210, 255, 218, 0.05);
+            backdrop-filter: blur(16px);
+        }
+
+        .command-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            min-height: 80px;
+            padding: 14px 18px;
+            border-radius: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .brand-mark,
+        .registration-mark {
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--line-bright);
+            color: var(--matrix);
+            background: rgba(48, 255, 83, 0.07);
+            box-shadow: inset 0 0 22px rgba(79, 255, 110, 0.12), 0 0 24px rgba(78, 255, 111, 0.18);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-weight: 900;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 auto;
+            border-radius: 12px;
+            font-size: 1.18rem;
+        }
+
+        .eyebrow,
+        .data-label,
+        .round-caption,
+        .profile-kicker,
+        .matrix-status,
+        .footer-note {
+            margin: 0;
+            color: var(--muted);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.13em;
+            text-transform: uppercase;
+        }
+
+        .brand h1 {
+            margin: 3px 0 0;
+            color: var(--matrix-bright);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(0.95rem, 2vw, 1.15rem);
+            letter-spacing: 0.08em;
+        }
+
+        .session-indicator {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 11px 8px 15px;
+            border: 1px solid rgba(121, 255, 154, 0.19);
+            border-radius: 14px;
+            background: rgba(0, 5, 2, 0.34);
+        }
+
+        .round-caption {
+            color: #d7fddd;
+            white-space: nowrap;
+        }
+
+        .round-progress {
+            display: flex;
+            gap: 6px;
+        }
+
+        .round-progress span {
+            display: block;
+            width: 22px;
+            height: 6px;
+            border-radius: 99px;
+            background: rgba(189, 255, 202, 0.18);
+            transition: 0.25s ease;
+        }
+
+        .round-progress span.done {
+            background: var(--matrix);
+            box-shadow: 0 0 10px rgba(84, 245, 122, 0.72);
+        }
+
+        .round-progress span.current {
+            background: var(--gold);
+            box-shadow: 0 0 10px rgba(255, 212, 93, 0.58);
+        }
+
+        .game-arena {
+            display: grid;
+            grid-template-columns: minmax(205px, 0.82fr) minmax(360px, 1.35fr) minmax(205px, 0.82fr);
+            align-items: stretch;
+            gap: clamp(14px, 2vw, 25px);
+            margin-top: clamp(18px, 3vw, 32px);
+        }
+
+        .panel {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+        }
+
+        .competitor {
+            display: flex;
+            min-height: 520px;
+            flex-direction: column;
+            padding: clamp(18px, 2vw, 26px);
+        }
+
+        .competitor::before {
+            position: absolute;
+            top: 0;
+            left: 12%;
+            width: 76%;
+            height: 1px;
+            content: "";
+            background: linear-gradient(90deg, transparent, var(--matrix), transparent);
+            opacity: 0.7;
+        }
+
+        .competitor--player {
+            justify-content: space-between;
+        }
+
+        .profile-head {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .player-avatar {
+            display: grid;
+            width: 53px;
+            height: 53px;
+            flex: 0 0 auto;
+            place-items: center;
+            border: 1px solid rgba(121, 255, 241, 0.66);
+            border-radius: 16px;
+            color: var(--cyan);
+            background: radial-gradient(circle at 35% 25%, rgba(121, 255, 241, 0.34), rgba(5, 24, 17, 0.86) 70%);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 1.45rem;
+            font-weight: 900;
+            box-shadow: 0 0 22px rgba(121, 255, 241, 0.18);
+        }
+
+        .player-name,
+        .machine-name {
+            display: block;
+            max-width: 155px;
+            overflow: hidden;
+            margin-top: 3px;
+            color: #f3fff4;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 1.02rem;
+            letter-spacing: 0.04em;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .profile-id {
+            margin: 5px 0 0;
+            color: var(--matrix);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.07em;
+        }
+
+        .versus-chip {
+            align-self: center;
+            padding: 7px 10px;
+            border: 1px solid rgba(121, 255, 241, 0.26);
+            border-radius: 999px;
+            color: var(--cyan);
+            background: rgba(121, 255, 241, 0.06);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.64rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+        }
+
+        .score-module {
+            padding: 17px;
+            border: 1px solid rgba(121, 255, 154, 0.17);
+            border-radius: 18px;
+            background: rgba(1, 8, 4, 0.42);
+        }
+
+        .score-line {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-top: 8px;
+        }
+
+        .coin-icon {
+            width: 34px;
+            height: 34px;
+            flex: 0 0 auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 212, 93, 0.38));
+        }
+
+        .score-value {
+            color: var(--gold);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(1.55rem, 3vw, 2.15rem);
+            font-variant-numeric: tabular-nums;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            line-height: 1;
+            text-shadow: 0 0 18px rgba(255, 212, 93, 0.34);
+        }
+
+        .score-unit {
+            color: #d1b365;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+        }
+
+        .record-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 7px;
+            margin-top: 16px;
+        }
+
+        .record-grid div {
+            padding: 8px 4px;
+            border: 1px solid rgba(166, 255, 181, 0.09);
+            border-radius: 10px;
             text-align: center;
         }
 
-        h1 {
-            margin-top: 0;
-            font-size: 40px;
+        .record-grid strong {
+            display: block;
+            color: #f1fff3;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 1rem;
+        }
+
+        .record-grid span {
+            display: block;
+            margin-top: 3px;
+            color: var(--muted);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.52rem;
+            letter-spacing: 0.08em;
+        }
+
+        .change-user {
+            width: 100%;
+            margin-top: 17px;
+            padding: 11px 12px;
+            border: 1px solid rgba(121, 255, 241, 0.32);
+            border-radius: 12px;
+            color: var(--cyan);
+            background: rgba(121, 255, 241, 0.06);
+            cursor: pointer;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.67rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: 0.2s ease;
+        }
+
+        .change-user:hover,
+        .change-user:focus-visible {
+            border-color: var(--cyan);
+            background: rgba(121, 255, 241, 0.14);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .board-panel {
+            display: flex;
+            min-height: 520px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(18px, 2.5vw, 30px);
+            text-align: center;
+        }
+
+        .board-panel::before {
+            position: absolute;
+            inset: 0;
+            content: "";
+            background:
+                linear-gradient(90deg, transparent 49.5%, rgba(99, 255, 135, 0.045) 50%, transparent 50.5%),
+                linear-gradient(0deg, transparent 49.5%, rgba(99, 255, 135, 0.045) 50%, transparent 50.5%);
+            background-size: 54px 54px;
+            pointer-events: none;
+        }
+
+        .board-title {
+            position: relative;
+            margin: 4px 0 5px;
+            color: #f5fff6;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(1.25rem, 3vw, 1.8rem);
+            letter-spacing: 0.09em;
+        }
+
+        .board-title span {
+            color: var(--matrix);
         }
 
         #estado {
-            font-size: 20px;
-            font-weight: bold;
-
-            margin-bottom: 20px;
+            position: relative;
+            max-width: 410px;
+            min-height: 44px;
+            margin: 14px auto 17px;
+            color: #ddffe2;
+            font-size: clamp(0.84rem, 1.6vw, 0.97rem);
+            font-weight: 650;
+            line-height: 1.5;
         }
 
         .tablero {
-
-            width: 330px;
-            height: 330px;
-
-            margin: auto;
-
+            position: relative;
+            z-index: 1;
             display: grid;
-
+            width: min(100%, 412px);
+            aspect-ratio: 1;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
+            gap: clamp(7px, 1.3vw, 11px);
+            padding: clamp(8px, 1.5vw, 12px);
+            border: 1px solid rgba(118, 255, 149, 0.31);
+            border-radius: 23px;
+            background: rgba(0, 9, 3, 0.72);
+            box-shadow: 0 0 0 1px rgba(95, 255, 128, 0.06), 0 0 36px rgba(38, 255, 80, 0.12), inset 0 0 36px rgba(0, 0, 0, 0.38);
+            transition: 0.25s ease;
+        }
 
-            gap: 8px;
+        .tablero.is-thinking {
+            border-color: rgba(255, 212, 93, 0.74);
+            box-shadow: 0 0 34px rgba(255, 212, 93, 0.15), inset 0 0 36px rgba(0, 0, 0, 0.38);
+        }
+
+        .tablero.is-thinking::after {
+            position: absolute;
+            right: 11px;
+            bottom: -26px;
+            left: 11px;
+            content: "MATRIX // ANALIZANDO VECTORES";
+            color: var(--gold);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.58rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
         }
 
         .casilla {
-
-            background: #e5e5e5;
-
-            border: none;
-
-            border-radius: 10px;
-
-            font-size: 65px;
-
-            font-weight: bold;
-
+            display: grid;
+            min-width: 0;
+            min-height: 0;
+            place-items: center;
+            border: 1px solid rgba(159, 255, 179, 0.13);
+            border-radius: 16px;
+            color: #f4fff5;
+            background: linear-gradient(135deg, rgba(22, 69, 33, 0.72), rgba(2, 14, 6, 0.82));
             cursor: pointer;
-
-            transition: 0.15s;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(2.5rem, 8vw, 4.8rem);
+            font-weight: 900;
+            line-height: 1;
+            transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
         }
 
-        .casilla:hover {
-
-            background: #d5d5d5;
-
-            transform: scale(1.03);
+        .casilla:not(:disabled):hover,
+        .casilla:not(:disabled):focus-visible {
+            border-color: var(--cyan);
+            background: linear-gradient(135deg, rgba(52, 117, 68, 0.86), rgba(4, 34, 16, 0.92));
+            box-shadow: inset 0 0 20px rgba(121, 255, 241, 0.16), 0 0 16px rgba(121, 255, 241, 0.16);
+            outline: none;
+            transform: scale(1.035);
         }
 
         .casilla:disabled {
-
             cursor: default;
         }
 
-        .ganadora {
-
-            background: #8ee68e !important;
+        .casilla.ficha-x {
+            color: var(--cyan);
+            text-shadow: 0 0 16px rgba(121, 255, 241, 0.78);
         }
 
-        #reiniciar {
+        .casilla.ficha-o {
+            color: var(--matrix);
+            text-shadow: 0 0 16px rgba(84, 245, 122, 0.8);
+        }
 
-            margin-top: 25px;
+        .casilla.ganadora {
+            border-color: var(--gold);
+            color: #fff5c8;
+            background: radial-gradient(circle, rgba(245, 208, 84, 0.35), rgba(17, 48, 15, 0.86));
+            box-shadow: 0 0 22px rgba(255, 212, 93, 0.32);
+            animation: winning-cell 1.05s ease-in-out infinite alternate;
+        }
 
-            padding: 12px 25px;
+        @keyframes winning-cell {
+            to {
+                box-shadow: 0 0 32px rgba(255, 220, 102, 0.68);
+                transform: translateY(-2px);
+            }
+        }
 
-            font-size: 17px;
+        .round-message {
+            position: relative;
+            min-height: 22px;
+            margin: 30px 0 12px;
+            color: #b9d8bd;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+        }
 
-            border: none;
-
-            border-radius: 8px;
-
-            background: #333;
-
-            color: white;
-
+        .round-action {
+            position: relative;
+            min-width: min(100%, 260px);
+            padding: 13px 18px;
+            border: 1px solid rgba(84, 245, 122, 0.64);
+            border-radius: 13px;
+            color: #031007;
+            background: linear-gradient(135deg, #9bffae, #50e875);
             cursor: pointer;
+            box-shadow: 0 9px 28px rgba(59, 236, 94, 0.2);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.73rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            transition: 0.18s ease;
         }
 
-        #reiniciar:hover {
-
-            background: #555;
+        .round-action:hover,
+        .round-action:focus-visible {
+            box-shadow: 0 11px 34px rgba(59, 236, 94, 0.35);
+            outline: none;
+            transform: translateY(-2px);
         }
 
+        .round-action[hidden] {
+            display: none;
+        }
+
+        .machine-card {
+            text-align: center;
+        }
+
+        .machine-head {
+            position: relative;
+            width: min(100%, 258px);
+            margin: 0 auto;
+        }
+
+        .machine-head::before {
+            position: absolute;
+            inset: 14% 6% 10%;
+            z-index: -1;
+            border-radius: 50%;
+            content: "";
+            background: radial-gradient(circle, rgba(48, 255, 89, 0.34), transparent 67%);
+            filter: blur(11px);
+        }
+
+        .machine-head img {
+            display: block;
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 16px rgba(64, 255, 103, 0.4));
+        }
+
+        .machine-name {
+            max-width: none;
+            margin: 12px 0 0;
+            color: var(--matrix);
+            font-size: clamp(1.25rem, 2.8vw, 1.62rem);
+            font-weight: 900;
+            letter-spacing: 0.11em;
+        }
+
+        .matrix-status {
+            margin-top: 7px;
+            color: #c5ffd0;
+            font-size: 0.6rem;
+            line-height: 1.55;
+        }
+
+        .machine-score {
+            margin-top: auto;
+            text-align: left;
+        }
+
+        .session-summary {
+            margin-top: clamp(18px, 3vw, 30px);
+            padding: clamp(20px, 3vw, 30px);
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .session-summary[hidden] {
+            display: none;
+        }
+
+        .summary-kicker {
+            margin: 0;
+            color: var(--gold);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.67rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+        }
+
+        .session-summary h2 {
+            margin: 8px 0 7px;
+            color: var(--matrix-bright);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(1.05rem, 3vw, 1.45rem);
+            letter-spacing: 0.04em;
+        }
+
+        .session-summary p:last-child {
+            max-width: 620px;
+            margin: 0 auto;
+            color: #d5ead7;
+            line-height: 1.55;
+        }
+
+        .footer-note {
+            margin: 22px 0 0;
+            color: rgba(210, 255, 218, 0.62);
+            text-align: center;
+        }
+
+        .registration {
+            position: fixed;
+            z-index: 10;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(0, 7, 2, 0.76);
+            backdrop-filter: blur(12px);
+        }
+
+        .registration[hidden] {
+            display: none;
+        }
+
+        .registration-card {
+            width: min(100%, 490px);
+            padding: clamp(24px, 5vw, 42px);
+            border: 1px solid rgba(114, 255, 146, 0.42);
+            border-radius: 25px;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(73, 255, 110, 0.18), transparent 42%),
+                linear-gradient(135deg, rgba(7, 31, 15, 0.98), rgba(1, 9, 4, 0.98));
+            box-shadow: 0 22px 100px rgba(0, 0, 0, 0.66), 0 0 46px rgba(58, 255, 96, 0.12);
+            text-align: center;
+        }
+
+        .registration-mark {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 17px;
+            border-radius: 18px;
+            font-size: 1.55rem;
+        }
+
+        .registration-card h2 {
+            margin: 7px 0 10px;
+            color: #effff1;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: clamp(1.35rem, 5vw, 1.85rem);
+            letter-spacing: 0.05em;
+        }
+
+        .registration-copy {
+            margin: 0 auto 24px;
+            color: #b8d2bc;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid rgba(122, 255, 154, 0.34);
+            border-radius: 13px;
+            color: #effff1;
+            outline: none;
+            background: rgba(0, 7, 2, 0.64);
+            box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.24);
+            transition: 0.2s ease;
+        }
+
+        .name-input::placeholder {
+            color: #729078;
+        }
+
+        .name-input:focus {
+            border-color: var(--matrix);
+            box-shadow: 0 0 0 3px rgba(84, 245, 122, 0.13), inset 0 0 16px rgba(0, 0, 0, 0.24);
+        }
+
+        .name-error {
+            min-height: 19px;
+            margin: 8px 0 0;
+            color: var(--danger);
+            font-size: 0.75rem;
+            text-align: left;
+        }
+
+        .start-button {
+            width: 100%;
+            margin-top: 14px;
+            padding: 14px 18px;
+            border: 1px solid rgba(147, 255, 170, 0.8);
+            border-radius: 13px;
+            color: #021006;
+            background: linear-gradient(135deg, #b1ffc0, #53e778);
+            cursor: pointer;
+            box-shadow: 0 12px 30px rgba(64, 245, 99, 0.2);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: 0.2s ease;
+        }
+
+        .start-button:hover,
+        .start-button:focus-visible {
+            box-shadow: 0 15px 37px rgba(64, 245, 99, 0.35);
+            outline: none;
+            transform: translateY(-2px);
+        }
+
+        .registration-note {
+            margin: 16px 0 0;
+            color: #8eaa93;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 0.62rem;
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 1040px) {
+            .game-arena {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .board-panel {
+                grid-column: 1 / -1;
+                min-height: auto;
+                grid-row: 1;
+            }
+
+            .competitor {
+                min-height: 365px;
+            }
+
+            .competitor--player {
+                grid-column: 1;
+                grid-row: 2;
+            }
+
+            .machine-card {
+                grid-column: 2;
+                grid-row: 2;
+            }
+
+            .machine-head {
+                width: min(100%, 190px);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .app-shell {
+                padding: 13px;
+            }
+
+            .command-bar {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 13px;
+                border-radius: 17px;
+            }
+
+            .session-indicator {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .game-arena {
+                grid-template-columns: 1fr;
+                gap: 13px;
+                margin-top: 13px;
+            }
+
+            .board-panel,
+            .competitor--player,
+            .machine-card {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            .board-panel {
+                order: -1;
+                padding: 20px 15px;
+                border-radius: 20px;
+            }
+
+            .competitor {
+                min-height: auto;
+                padding: 17px;
+                border-radius: 18px;
+            }
+
+            .competitor--player {
+                gap: 18px;
+            }
+
+            .machine-card {
+                display: grid;
+                grid-template-columns: 118px 1fr;
+                column-gap: 15px;
+                text-align: left;
+            }
+
+            .machine-head {
+                width: 100%;
+                grid-row: span 2;
+            }
+
+            .machine-name {
+                align-self: end;
+                margin: 0;
+            }
+
+            .matrix-status {
+                align-self: start;
+            }
+
+            .machine-score {
+                grid-column: 1 / -1;
+                margin-top: 15px;
+            }
+
+            .round-progress span {
+                width: 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
+        }
     </style>
 </head>
-
 <body>
+    <main class="app-shell">
+        <header class="command-bar">
+            <div class="brand">
+                <div class="brand-mark" aria-hidden="true">X/O</div>
+                <div>
+                    <p class="eyebrow">Neural game protocol</p>
+                    <h1>TRIQUI // MATRIX</h1>
+                </div>
+            </div>
 
-<div class="juego">
+            <div class="session-indicator" aria-label="Progreso de la sesion">
+                <span id="roundCaption" class="round-caption">RONDA 01 / 03</span>
+                <div id="roundProgress" class="round-progress" aria-hidden="true">
+                    <span class="current"></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </header>
 
-    <h1>Triqui</h1>
+        <section class="game-arena" aria-label="Arena de juego">
+            <aside class="panel competitor competitor--player" aria-label="Perfil del jugador">
+                <div>
+                    <div class="profile-head">
+                        <div id="playerInitial" class="player-avatar" aria-hidden="true">?</div>
+                        <div>
+                            <p class="profile-kicker">Operador humano</p>
+                            <strong id="playerName" class="player-name">Sin registro</strong>
+                            <p id="playerId" class="profile-id">ID // PENDIENTE</p>
+                        </div>
+                    </div>
 
-    <div id="estado">
-        Tu turno — eres X
-    </div>
+                    <div class="versus-chip">FICHA X // HUMANO</div>
+                </div>
 
-    <div class="tablero">
+                <div>
+                    <div class="score-module">
+                        <p class="data-label">Puntaje de sesion</p>
+                        <div class="score-line">
+                            <img class="coin-icon" src="./money.png" alt="">
+                            <output id="playerScore" class="score-value">000</output>
+                            <span class="score-unit">PTS</span>
+                        </div>
 
-        <button class="casilla" data-pos="0"></button>
-        <button class="casilla" data-pos="1"></button>
-        <button class="casilla" data-pos="2"></button>
+                        <div class="record-grid" aria-label="Resultados del jugador">
+                            <div><strong id="playerWins">0</strong><span>GANA</span></div>
+                            <div><strong id="playerDraws">0</strong><span>EMPATA</span></div>
+                            <div><strong id="playerLosses">0</strong><span>CAE</span></div>
+                        </div>
+                    </div>
 
-        <button class="casilla" data-pos="3"></button>
-        <button class="casilla" data-pos="4"></button>
-        <button class="casilla" data-pos="5"></button>
+                    <button id="changePlayer" class="change-user" type="button">Cambiar operador</button>
+                </div>
+            </aside>
 
-        <button class="casilla" data-pos="6"></button>
-        <button class="casilla" data-pos="7"></button>
-        <button class="casilla" data-pos="8"></button>
+            <section class="panel board-panel" aria-labelledby="gameTitle">
+                <p class="eyebrow">Desafio tactico de tres rondas</p>
+                <h2 id="gameTitle" class="board-title">TRIQUI <span>NEURAL</span></h2>
+                <div id="estado" role="status" aria-live="polite">Registra tu nombre para iniciar el protocolo.</div>
 
-    </div>
+                <div id="tablero" class="tablero" role="grid" aria-label="Tablero de Triqui">
+                    <button class="casilla" type="button" data-pos="0" aria-label="Fila 1, columna 1" disabled></button>
+                    <button class="casilla" type="button" data-pos="1" aria-label="Fila 1, columna 2" disabled></button>
+                    <button class="casilla" type="button" data-pos="2" aria-label="Fila 1, columna 3" disabled></button>
+                    <button class="casilla" type="button" data-pos="3" aria-label="Fila 2, columna 1" disabled></button>
+                    <button class="casilla" type="button" data-pos="4" aria-label="Fila 2, columna 2" disabled></button>
+                    <button class="casilla" type="button" data-pos="5" aria-label="Fila 2, columna 3" disabled></button>
+                    <button class="casilla" type="button" data-pos="6" aria-label="Fila 3, columna 1" disabled></button>
+                    <button class="casilla" type="button" data-pos="7" aria-label="Fila 3, columna 2" disabled></button>
+                    <button class="casilla" type="button" data-pos="8" aria-label="Fila 3, columna 3" disabled></button>
+                </div>
 
-    <button id="reiniciar">
-        Nueva partida
-    </button>
+                <p id="roundMessage" class="round-message">La sesion contiene 3 partidas. Cada victoria vale 100 puntos.</p>
+                <button id="roundAction" class="round-action" type="button" hidden></button>
+            </section>
 
-</div>
+            <aside class="panel competitor machine-card" aria-label="Perfil de MATRIX">
+                <div class="machine-head">
+                    <img src="./matrix.png" alt="MATRIX, inteligencia artificial rival">
+                </div>
 
+                <div>
+                    <strong class="machine-name">MATRIX</strong>
+                    <p id="matrixStatus" class="matrix-status">NODO CENTRAL // ESPERANDO OPERADOR</p>
+                </div>
 
-<script>
+                <div class="score-module machine-score">
+                    <p class="data-label">Puntaje MATRIX</p>
+                    <div class="score-line">
+                        <img class="coin-icon" src="./money.png" alt="">
+                        <output id="matrixScore" class="score-value">000</output>
+                        <span class="score-unit">PTS</span>
+                    </div>
 
-    /*
-     * ============================
-     * CONFIGURACIÓN DEL JUEGO
-     * ============================
-     */
+                    <div class="record-grid" aria-label="Resultados de MATRIX">
+                        <div><strong id="matrixWins">0</strong><span>GANA</span></div>
+                        <div><strong id="matrixDraws">0</strong><span>EMPATA</span></div>
+                        <div><strong id="matrixLosses">0</strong><span>CAE</span></div>
+                    </div>
+                </div>
+            </aside>
+        </section>
 
-    const JUGADOR = "X";
-    const MAQUINA = "O";
+        <section id="sessionSummary" class="session-summary" hidden aria-live="polite">
+            <p class="summary-kicker">Sesion de tres rondas completada</p>
+            <h2 id="summaryTitle">Resultado registrado</h2>
+            <p id="summaryText"></p>
+        </section>
 
-    let tablero = [
-        "", "", "",
-        "", "", "",
-        "", "", ""
-    ];
+        <p class="footer-note">MATRIX CORE ONLINE // 3 RONDAS // +100 PUNTOS POR VICTORIA</p>
+    </main>
 
-    let juegoTerminado = false;
+    <section id="registration" class="registration" role="dialog" aria-modal="true" aria-labelledby="registrationTitle">
+        <div class="registration-card">
+            <div class="registration-mark" aria-hidden="true">M</div>
+            <p class="eyebrow">MATRIX GAME NETWORK</p>
+            <h2 id="registrationTitle">Identifica tu operador</h2>
+            <p class="registration-copy">MATRIX analizara cada jugada. Registra tu nombre para abrir una sesion de 3 partidas.</p>
 
-    let turnoJugador = true;
+            <form id="playerForm" novalidate>
+                <label class="data-label" for="playerInput">Nombre de usuario</label>
+                <input id="playerInput" class="name-input" type="text" maxlength="24" autocomplete="name" placeholder="Escribe tu nombre" required>
+                <p id="nameError" class="name-error" role="alert"></p>
+                <button class="start-button" type="submit">Iniciar desafio</button>
+            </form>
 
+            <p class="registration-note">CADA VICTORIA ENTREGA 100 PUNTOS</p>
+        </div>
+    </section>
 
-    /*
-     * Combinaciones ganadoras
-     */
+    <script>
+        const JUGADOR = "X";
+        const MATRIX = "O";
+        const RONDAS_POR_SESION = 3;
+        const PUNTOS_POR_VICTORIA = 100;
+        const PROBABILIDAD_VARIACION_MATRIX = 0.16;
+        const LLAVE_NOMBRE = "triqui-matrix-player-name";
 
-    const combinacionesGanadoras = [
+        const FASE = {
+            REGISTRO: "registro",
+            JUGADOR: "jugador",
+            MAQUINA: "maquina",
+            ENTRE_RONDAS: "entre-rondas",
+            SESION_FINALIZADA: "sesion-finalizada"
+        };
 
-        // Filas
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
+        const combinacionesGanadoras = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8]
+        ];
 
-        // Columnas
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
+        const casillas = document.querySelectorAll(".casilla");
+        const tableroElement = document.getElementById("tablero");
+        const estado = document.getElementById("estado");
+        const roundCaption = document.getElementById("roundCaption");
+        const roundProgress = document.getElementById("roundProgress");
+        const roundMessage = document.getElementById("roundMessage");
+        const roundAction = document.getElementById("roundAction");
+        const playerName = document.getElementById("playerName");
+        const playerInitial = document.getElementById("playerInitial");
+        const playerId = document.getElementById("playerId");
+        const playerScore = document.getElementById("playerScore");
+        const matrixScore = document.getElementById("matrixScore");
+        const playerWins = document.getElementById("playerWins");
+        const playerDraws = document.getElementById("playerDraws");
+        const playerLosses = document.getElementById("playerLosses");
+        const matrixWins = document.getElementById("matrixWins");
+        const matrixDraws = document.getElementById("matrixDraws");
+        const matrixLosses = document.getElementById("matrixLosses");
+        const matrixStatus = document.getElementById("matrixStatus");
+        const sessionSummary = document.getElementById("sessionSummary");
+        const summaryTitle = document.getElementById("summaryTitle");
+        const summaryText = document.getElementById("summaryText");
+        const registration = document.getElementById("registration");
+        const playerForm = document.getElementById("playerForm");
+        const playerInput = document.getElementById("playerInput");
+        const nameError = document.getElementById("nameError");
+        const changePlayer = document.getElementById("changePlayer");
 
-        // Diagonales
-        [0, 4, 8],
-        [2, 4, 6]
+        let tablero = Array(9).fill("");
+        let fase = FASE.REGISTRO;
+        let rondasCompletadas = 0;
+        let puntosJugador = 0;
+        let puntosMatrix = 0;
+        let victoriasJugador = 0;
+        let victoriasMatrix = 0;
+        let empates = 0;
+        let jugadorNombre = "";
+        let lineaGanadora = [];
+        let temporizadorMaquina = null;
+        let versionRonda = 0;
 
-    ];
+        function normalizarNombre(valor) {
+            return valor.trim().split(" ").filter(Boolean).join(" ").slice(0, 24);
+        }
 
+        function cargarNombreGuardado() {
+            try {
+                return localStorage.getItem(LLAVE_NOMBRE) || "";
+            } catch (error) {
+                return "";
+            }
+        }
 
-    const casillas =
-        document.querySelectorAll(".casilla");
+        function guardarNombre(nombre) {
+            try {
+                localStorage.setItem(LLAVE_NOMBRE, nombre);
+            } catch (error) {
+                // El juego funciona igual cuando el navegador bloquea el almacenamiento.
+            }
+        }
 
-    const estado =
-        document.getElementById("estado");
+        function actualizarPerfil() {
+            const inicial = jugadorNombre ? jugadorNombre.charAt(0).toUpperCase() : "?";
+            playerInitial.textContent = inicial;
+            playerName.textContent = jugadorNombre || "Sin registro";
+            playerId.textContent = jugadorNombre ? "ID // " + jugadorNombre.toUpperCase() : "ID // PENDIENTE";
+        }
 
-    const botonReiniciar =
-        document.getElementById("reiniciar");
+        function formatearPuntos(puntos) {
+            return String(puntos).padStart(3, "0");
+        }
 
+        function actualizarMarcadores() {
+            playerScore.value = formatearPuntos(puntosJugador);
+            playerScore.textContent = formatearPuntos(puntosJugador);
+            matrixScore.value = formatearPuntos(puntosMatrix);
+            matrixScore.textContent = formatearPuntos(puntosMatrix);
+            playerWins.textContent = victoriasJugador;
+            playerDraws.textContent = empates;
+            playerLosses.textContent = victoriasMatrix;
+            matrixWins.textContent = victoriasMatrix;
+            matrixDraws.textContent = empates;
+            matrixLosses.textContent = victoriasJugador;
+        }
 
-    /*
-     * ============================
-     * JUGADA DEL JUGADOR
-     * ============================
-     */
+        function actualizarProgreso() {
+            const esFinal = fase === FASE.SESION_FINALIZADA;
+            const rondaVisible = esFinal ? RONDAS_POR_SESION : Math.min(rondasCompletadas + 1, RONDAS_POR_SESION);
+            roundCaption.textContent = "RONDA " + String(rondaVisible).padStart(2, "0") + " / 03";
 
-    casillas.forEach(casilla => {
+            Array.from(roundProgress.children).forEach(function (indicador, indice) {
+                indicador.classList.toggle("done", indice < rondasCompletadas);
+                indicador.classList.toggle("current", indice === rondasCompletadas && !esFinal);
+            });
+        }
 
-        casilla.addEventListener("click", function() {
+        function actualizarNarrativaMatrix() {
+            if (fase === FASE.REGISTRO) {
+                matrixStatus.textContent = "NODO CENTRAL // ESPERANDO OPERADOR";
+            } else if (fase === FASE.JUGADOR) {
+                matrixStatus.textContent = "MOTOR MINIMAX ADAPTATIVO // VIGILANDO TU MOVIMIENTO";
+            } else if (fase === FASE.MAQUINA) {
+                matrixStatus.textContent = "MOTOR MINIMAX ADAPTATIVO // CALCULANDO 8.192.000 RUTAS";
+            } else if (fase === FASE.ENTRE_RONDAS) {
+                matrixStatus.textContent = "NODO CENTRAL // PREPARADO PARA LA SIGUIENTE RONDA";
+            } else {
+                matrixStatus.textContent = "NODO CENTRAL // SESION FINALIZADA";
+            }
+        }
 
-            if (juegoTerminado) {
+        function actualizarTablero() {
+            tableroElement.classList.toggle("is-thinking", fase === FASE.MAQUINA);
+
+            casillas.forEach(function (casilla) {
+                const posicion = Number(casilla.dataset.pos);
+                const ficha = tablero[posicion];
+                const fila = Math.floor(posicion / 3) + 1;
+                const columna = (posicion % 3) + 1;
+
+                casilla.textContent = ficha;
+                casilla.disabled = fase !== FASE.JUGADOR || ficha !== "";
+                casilla.classList.toggle("ficha-x", ficha === JUGADOR);
+                casilla.classList.toggle("ficha-o", ficha === MATRIX);
+                casilla.classList.toggle("ganadora", lineaGanadora.includes(posicion));
+                casilla.setAttribute(
+                    "aria-label",
+                    ficha ? "Fila " + fila + ", columna " + columna + ": " + ficha : "Fila " + fila + ", columna " + columna + ": vacia"
+                );
+            });
+        }
+
+        function renderizar() {
+            actualizarPerfil();
+            actualizarMarcadores();
+            actualizarProgreso();
+            actualizarNarrativaMatrix();
+            actualizarTablero();
+        }
+
+        function cancelarTurnoMaquina() {
+            versionRonda += 1;
+
+            if (temporizadorMaquina !== null) {
+                clearTimeout(temporizadorMaquina);
+                temporizadorMaquina = null;
+            }
+        }
+
+        function iniciarSesion() {
+            cancelarTurnoMaquina();
+            rondasCompletadas = 0;
+            puntosJugador = 0;
+            puntosMatrix = 0;
+            victoriasJugador = 0;
+            victoriasMatrix = 0;
+            empates = 0;
+            sessionSummary.hidden = true;
+            iniciarRonda();
+        }
+
+        function iniciarRonda() {
+            cancelarTurnoMaquina();
+            tablero = Array(9).fill("");
+            lineaGanadora = [];
+            fase = FASE.JUGADOR;
+            estado.textContent = "Tu turno, " + jugadorNombre + ". Activa un nodo con la ficha X.";
+            roundMessage.textContent = "Ronda " + (rondasCompletadas + 1) + " de " + RONDAS_POR_SESION + ". Cada victoria entrega " + PUNTOS_POR_VICTORIA + " puntos.";
+            roundAction.hidden = true;
+            roundAction.disabled = true;
+            renderizar();
+        }
+
+        function abrirRegistro() {
+            cancelarTurnoMaquina();
+            fase = FASE.REGISTRO;
+            nameError.textContent = "";
+            playerInput.value = jugadorNombre || cargarNombreGuardado();
+            registration.hidden = false;
+            renderizar();
+            setTimeout(function () {
+                playerInput.focus();
+                playerInput.select();
+            }, 0);
+        }
+
+        function programarTurnoMaquina() {
+            const token = versionRonda;
+
+            temporizadorMaquina = setTimeout(function () {
+                temporizadorMaquina = null;
+
+                if (token !== versionRonda || fase !== FASE.MAQUINA) {
+                    return;
+                }
+
+                jugarMaquina();
+            }, 620);
+        }
+
+        function jugarJugador(posicion) {
+            if (fase !== FASE.JUGADOR || tablero[posicion] !== "") {
                 return;
             }
-
-            if (!turnoJugador) {
-                return;
-            }
-
-            const posicion =
-                Number(this.dataset.pos);
-
-
-            // No permitir jugar donde ya existe una ficha
-
-            if (tablero[posicion] !== "") {
-                return;
-            }
-
-
-            // Colocar X
 
             tablero[posicion] = JUGADOR;
 
-            actualizarTablero();
-
-
-            /*
-             * Comprobar si el jugador ganó
-             */
-
-            if (comprobarResultado()) {
+            if (resolverFinRonda()) {
                 return;
             }
 
+            fase = FASE.MAQUINA;
+            estado.textContent = "MATRIX esta analizando tu patron de juego...";
+            roundMessage.textContent = "La inteligencia artificial prepara su respuesta.";
+            renderizar();
+            programarTurnoMaquina();
+        }
 
-            /*
-             * Comprobar empate
-             */
+        function jugarMaquina() {
+            const mejorMovimiento = obtenerMovimientoMatrix();
+
+            if (mejorMovimiento === -1) {
+                finalizarRonda(null);
+                return;
+            }
+
+            tablero[mejorMovimiento] = MATRIX;
+
+            if (resolverFinRonda()) {
+                return;
+            }
+
+            fase = FASE.JUGADOR;
+            estado.textContent = "Tu turno, " + jugadorNombre + ". MATRIX ha bloqueado un vector.";
+            roundMessage.textContent = "Tu ficha es X. Encuentra la siguiente apertura.";
+            renderizar();
+        }
+
+        function resolverFinRonda() {
+            const ganador = obtenerGanador(tablero);
+
+            if (ganador) {
+                lineaGanadora = obtenerLineaGanadora(tablero);
+                finalizarRonda(ganador);
+                return true;
+            }
 
             if (tableroLleno()) {
-                estado.textContent = "¡Empate!";
-                juegoTerminado = true;
-                return;
+                finalizarRonda(null);
+                return true;
             }
 
-
-            /*
-             * Ahora juega la máquina
-             */
-
-            turnoJugador = false;
-
-            estado.textContent =
-                "La máquina está pensando...";
-
-
-            // Pequeño retraso para que parezca que piensa
-
-            setTimeout(() => {
-
-                jugarMaquina();
-
-            }, 500);
-
-        });
-
-    });
-
-
-    /*
-     * ============================
-     * JUGADA DE LA MÁQUINA
-     * ============================
-     */
-
-    function jugarMaquina() {
-
-        if (juegoTerminado) {
-            return;
-        }
-
-
-        /*
-         * La máquina utiliza MINIMAX
-         * para buscar la mejor jugada.
-         */
-
-        const mejorMovimiento =
-            obtenerMejorMovimiento();
-
-
-        tablero[mejorMovimiento] = MAQUINA;
-
-        actualizarTablero();
-
-
-        /*
-         * Comprobar resultado
-         */
-
-        if (comprobarResultado()) {
-            return;
-        }
-
-
-        /*
-         * Comprobar empate
-         */
-
-        if (tableroLleno()) {
-
-            estado.textContent =
-                "¡Empate!";
-
-            juegoTerminado = true;
-
-            return;
-        }
-
-
-        /*
-         * Volver al jugador
-         */
-
-        turnoJugador = true;
-
-        estado.textContent =
-            "Tu turno — eres X";
-
-    }
-
-
-    /*
-     * ============================
-     * MINIMAX
-     * ============================
-     *
-     * La máquina analiza las posibles
-     * jugadas y selecciona la mejor.
-     */
-
-    function obtenerMejorMovimiento() {
-
-        let mejorPuntuacion = -Infinity;
-
-        let movimiento = -1;
-
-
-        for (let i = 0; i < 9; i++) {
-
-            if (tablero[i] === "") {
-
-                tablero[i] = MAQUINA;
-
-
-                const puntuacion =
-                    minimax(tablero, false);
-
-
-                tablero[i] = "";
-
-
-                if (puntuacion > mejorPuntuacion) {
-
-                    mejorPuntuacion =
-                        puntuacion;
-
-                    movimiento = i;
-                }
-
-            }
-
-        }
-
-
-        return movimiento;
-    }
-
-
-    /*
-     * Algoritmo Minimax
-     */
-
-    function minimax(tableroActual, maximizando) {
-
-        const resultado =
-            obtenerGanador(tableroActual);
-
-
-        /*
-         * Si gana la máquina
-         */
-
-        if (resultado === MAQUINA) {
-            return 10;
-        }
-
-
-        /*
-         * Si gana el jugador
-         */
-
-        if (resultado === JUGADOR) {
-            return -10;
-        }
-
-
-        /*
-         * Empate
-         */
-
-        if (!tableroActual.includes("")) {
-            return 0;
-        }
-
-
-        /*
-         * Turno de la máquina
-         */
-
-        if (maximizando) {
-
-            let mejorPuntuacion = -Infinity;
-
-
-            for (let i = 0; i < 9; i++) {
-
-                if (tableroActual[i] === "") {
-
-                    tableroActual[i] = MAQUINA;
-
-
-                    const puntuacion =
-                        minimax(
-                            tableroActual,
-                            false
-                        );
-
-
-                    tableroActual[i] = "";
-
-
-                    mejorPuntuacion =
-                        Math.max(
-                            mejorPuntuacion,
-                            puntuacion
-                        );
-                }
-            }
-
-
-            return mejorPuntuacion;
-
-        }
-
-
-        /*
-         * Turno del jugador
-         */
-
-        else {
-
-            let mejorPuntuacion = Infinity;
-
-
-            for (let i = 0; i < 9; i++) {
-
-                if (tableroActual[i] === "") {
-
-                    tableroActual[i] = JUGADOR;
-
-
-                    const puntuacion =
-                        minimax(
-                            tableroActual,
-                            true
-                        );
-
-
-                    tableroActual[i] = "";
-
-
-                    mejorPuntuacion =
-                        Math.min(
-                            mejorPuntuacion,
-                            puntuacion
-                        );
-                }
-            }
-
-
-            return mejorPuntuacion;
-        }
-
-    }
-
-
-    /*
-     * ============================
-     * COMPROBAR GANADOR
-     * ============================
-     */
-
-    function obtenerGanador(tableroActual) {
-
-        for (
-            const combinacion
-            of combinacionesGanadoras
-        ) {
-
-            const a = combinacion[0];
-            const b = combinacion[1];
-            const c = combinacion[2];
-
-
-            if (
-
-                tableroActual[a] !== "" &&
-
-                tableroActual[a] ===
-                tableroActual[b] &&
-
-                tableroActual[a] ===
-                tableroActual[c]
-
-            ) {
-
-                return tableroActual[a];
-
-            }
-
-        }
-
-
-        return null;
-    }
-
-
-    /*
-     * ============================
-     * COMPROBAR RESULTADO
-     * ============================
-     */
-
-    function comprobarResultado() {
-
-        const ganador =
-            obtenerGanador(tablero);
-
-
-        if (ganador === null) {
             return false;
         }
 
+        function finalizarRonda(ganador) {
+            cancelarTurnoMaquina();
+            rondasCompletadas += 1;
 
-        juegoTerminado = true;
-
-
-        if (ganador === JUGADOR) {
-
-            estado.textContent =
-                "🎉 ¡Ganaste!";
-
-        }
-
-        else {
-
-            estado.textContent =
-                "🤖 ¡La máquina ganó!";
-
-        }
-
-
-        /*
-         * Resaltar línea ganadora
-         */
-
-        for (
-            const combinacion
-            of combinacionesGanadoras
-        ) {
-
-            const a = combinacion[0];
-            const b = combinacion[1];
-            const c = combinacion[2];
-
-
-            if (
-
-                tablero[a] !== "" &&
-
-                tablero[a] === tablero[b] &&
-
-                tablero[a] === tablero[c]
-
-            ) {
-
-                casillas[a]
-                    .classList.add("ganadora");
-
-                casillas[b]
-                    .classList.add("ganadora");
-
-                casillas[c]
-                    .classList.add("ganadora");
-
-                break;
+            if (ganador === JUGADOR) {
+                puntosJugador += PUNTOS_POR_VICTORIA;
+                victoriasJugador += 1;
+                estado.textContent = "Victoria de " + jugadorNombre + ". Has superado una prediccion de MATRIX.";
+                roundMessage.textContent = "+100 puntos registrados para tu perfil.";
+            } else if (ganador === MATRIX) {
+                puntosMatrix += PUNTOS_POR_VICTORIA;
+                victoriasMatrix += 1;
+                estado.textContent = "MATRIX gana esta ronda. Su red minimax encontro la ruta perfecta.";
+                roundMessage.textContent = "MATRIX recibe +100 puntos.";
+            } else {
+                empates += 1;
+                estado.textContent = "Empate tactico. Ningun nodo obtuvo puntos.";
+                roundMessage.textContent = "La ronda cuenta para la sesion, pero no entrega puntos.";
             }
 
+            if (rondasCompletadas >= RONDAS_POR_SESION) {
+                fase = FASE.SESION_FINALIZADA;
+                roundAction.textContent = "Nueva sesion";
+                roundAction.hidden = false;
+                roundAction.disabled = false;
+                mostrarResumenSesion();
+            } else {
+                fase = FASE.ENTRE_RONDAS;
+                roundAction.textContent = "Iniciar ronda " + (rondasCompletadas + 1);
+                roundAction.hidden = false;
+                roundAction.disabled = false;
+            }
+
+            renderizar();
         }
 
+        function mostrarResumenSesion() {
+            let titulo;
+            let texto;
 
-        return true;
-    }
+            if (puntosJugador > puntosMatrix) {
+                titulo = "Victoria de " + jugadorNombre;
+                texto = "Cerraste la sesion con " + puntosJugador + " puntos frente a " + puntosMatrix + " de MATRIX.";
+            } else if (puntosMatrix > puntosJugador) {
+                titulo = "MATRIX domina la sesion";
+                texto = "MATRIX termina con " + puntosMatrix + " puntos. Tu registro final es de " + puntosJugador + " puntos.";
+            } else {
+                titulo = "Sesion en equilibrio";
+                texto = "Ambos contendientes cierran con " + puntosJugador + " puntos. MATRIX respeta la paridad tactica.";
+            }
 
+            summaryTitle.textContent = titulo;
+            summaryText.textContent = texto;
+            sessionSummary.hidden = false;
+        }
 
-    /*
-     * ============================
-     * TABLERO LLENO
-     * ============================
-     */
+        function obtenerLineaGanadora(tableroActual) {
+            for (const combinacion of combinacionesGanadoras) {
+                const a = combinacion[0];
+                const b = combinacion[1];
+                const c = combinacion[2];
 
-    function tableroLleno() {
+                if (
+                    tableroActual[a] !== "" &&
+                    tableroActual[a] === tableroActual[b] &&
+                    tableroActual[a] === tableroActual[c]
+                ) {
+                    return combinacion;
+                }
+            }
 
-        return !tablero.includes("");
+            return [];
+        }
 
-    }
+        function obtenerGanador(tableroActual) {
+            const linea = obtenerLineaGanadora(tableroActual);
+            return linea.length ? tableroActual[linea[0]] : null;
+        }
 
+        function tableroLleno() {
+            return !tablero.includes("");
+        }
 
-    /*
-     * ============================
-     * ACTUALIZAR TABLERO
-     * ============================
-     */
+        function obtenerMejorMovimiento() {
+            let mejorPuntuacion = -Infinity;
+            let movimiento = -1;
 
-    function actualizarTablero() {
+            for (let i = 0; i < tablero.length; i += 1) {
+                if (tablero[i] === "") {
+                    tablero[i] = MATRIX;
+                    const puntuacion = minimax(tablero, false);
+                    tablero[i] = "";
 
-        casillas.forEach(casilla => {
+                    if (puntuacion > mejorPuntuacion) {
+                        mejorPuntuacion = puntuacion;
+                        movimiento = i;
+                    }
+                }
+            }
 
-            const posicion =
-                Number(casilla.dataset.pos);
+            return movimiento;
+        }
 
-
-            casilla.textContent =
-                tablero[posicion];
-
+        function obtenerMovimientoMatrix() {
+            const mejorMovimiento = obtenerMejorMovimiento();
+            const movimientosDisponibles = tablero
+                .map(function (ficha, posicion) {
+                    return ficha === "" ? posicion : -1;
+                })
+                .filter(function (posicion) {
+                    return posicion !== -1;
+                });
 
             /*
-             * Deshabilitar casillas ocupadas
+             * MATRIX usa Minimax como nucleo, pero introduce una variacion
+             * tactica ocasional. Asi sigue siendo un rival muy fuerte y el
+             * jugador conserva una posibilidad real de conseguir puntos.
              */
+            if (
+                movimientosDisponibles.length > 1 &&
+                Math.random() < PROBABILIDAD_VARIACION_MATRIX
+            ) {
+                const alternativas = movimientosDisponibles.filter(function (posicion) {
+                    return posicion !== mejorMovimiento;
+                });
 
-            casilla.disabled =
-                tablero[posicion] !== "";
+                return alternativas[
+                    Math.floor(Math.random() * alternativas.length)
+                ];
+            }
 
+            return mejorMovimiento;
+        }
+
+        function minimax(tableroActual, maximizando) {
+            const resultado = obtenerGanador(tableroActual);
+
+            if (resultado === MATRIX) {
+                return 10;
+            }
+
+            if (resultado === JUGADOR) {
+                return -10;
+            }
+
+            if (!tableroActual.includes("")) {
+                return 0;
+            }
+
+            if (maximizando) {
+                let mejorPuntuacion = -Infinity;
+
+                for (let i = 0; i < tableroActual.length; i += 1) {
+                    if (tableroActual[i] === "") {
+                        tableroActual[i] = MATRIX;
+                        mejorPuntuacion = Math.max(mejorPuntuacion, minimax(tableroActual, false));
+                        tableroActual[i] = "";
+                    }
+                }
+
+                return mejorPuntuacion;
+            }
+
+            let mejorPuntuacion = Infinity;
+
+            for (let i = 0; i < tableroActual.length; i += 1) {
+                if (tableroActual[i] === "") {
+                    tableroActual[i] = JUGADOR;
+                    mejorPuntuacion = Math.min(mejorPuntuacion, minimax(tableroActual, true));
+                    tableroActual[i] = "";
+                }
+            }
+
+            return mejorPuntuacion;
+        }
+
+        playerForm.addEventListener("submit", function (evento) {
+            evento.preventDefault();
+
+            const nombre = normalizarNombre(playerInput.value);
+
+            if (!nombre) {
+                nameError.textContent = "Ingresa un nombre para registrar tu perfil.";
+                playerInput.focus();
+                return;
+            }
+
+            jugadorNombre = nombre;
+            guardarNombre(jugadorNombre);
+            nameError.textContent = "";
+            registration.hidden = true;
+            iniciarSesion();
         });
 
-    }
-
-
-    /*
-     * ============================
-     * REINICIAR
-     * ============================
-     */
-
-    botonReiniciar.addEventListener(
-        "click",
-        reiniciar
-    );
-
-
-    function reiniciar() {
-
-        tablero = [
-            "", "", "",
-            "", "", "",
-            "", "", ""
-        ];
-
-
-        juegoTerminado = false;
-
-        turnoJugador = true;
-
-
-        casillas.forEach(casilla => {
-
-            casilla.textContent = "";
-
-            casilla.disabled = false;
-
-            casilla.classList.remove(
-                "ganadora"
-            );
-
+        casillas.forEach(function (casilla) {
+            casilla.addEventListener("click", function () {
+                jugarJugador(Number(casilla.dataset.pos));
+            });
         });
 
+        roundAction.addEventListener("click", function () {
+            if (fase === FASE.ENTRE_RONDAS) {
+                iniciarRonda();
+            } else if (fase === FASE.SESION_FINALIZADA) {
+                iniciarSesion();
+            }
+        });
 
-        estado.textContent =
-            "Tu turno — eres X";
+        changePlayer.addEventListener("click", abrirRegistro);
 
-    }
-
-</script>
-
+        playerInput.value = cargarNombreGuardado();
+        renderizar();
+    </script>
 </body>
 </html>
